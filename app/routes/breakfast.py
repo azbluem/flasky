@@ -45,8 +45,8 @@ def validate_breakfast(brekky_id):
         brekky_id = int (brekky_id)
     except ValueError:
         abort(make_response({"message": f"{brekky_id} is not a valid breakfast"},400))
-    breakfasts = Breakfast.query.all()
-    for brek in breakfasts:
-        if brek.id==brekky_id:
-            return brek
-    abort(make_response({"message":f"Sorry, {brekky_id} is not on the menu, have some tea!"},418))
+    brekky = Breakfast.query.get(brekky_id)
+    
+    if not brekky:
+        abort(make_response({"message":f"Sorry, {brekky_id} is not on the menu, have some tea!"},418))
+    return brekky
