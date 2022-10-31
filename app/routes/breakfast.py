@@ -40,6 +40,29 @@ def get_one_breakfast(brekky_id):
             "rating":brekky.rating,
             "prep time":brekky.prep_time
             },200)
+
+@breakfast_bp.route("/<brekky_id>", methods=["PATCH"])
+def update_one_breakfast(brekky_id):
+    brekky = validate_breakfast(brekky_id)
+    request_body = request.get_json()
+
+    brekky.name = request_body["name"]
+    brekky.rating = request_body["rating"]
+    brekky.prep_time = request_body["prep time"]
+
+    db.session.commit()
+
+    return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully updated'),202)
+
+@breakfast_bp.route("/<brekky_id>", methods=["DELETE"])
+def eat_the_breakfast(brekky_id):
+    brekky = validate_breakfast(brekky_id)
+
+    db.session.delete(brekky)
+    db.session.commit()
+
+    return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully devoured'),202)
+
 def validate_breakfast(brekky_id):
     try:
         brekky_id = int (brekky_id)
