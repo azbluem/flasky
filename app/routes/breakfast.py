@@ -1,3 +1,4 @@
+import re
 from flask import Blueprint, jsonify, abort, make_response, request
 from app.models.breakfasts import Breakfast
 from app import db
@@ -9,7 +10,7 @@ breakfast_bp = Blueprint("breakfast_bp", __name__, url_prefix="/breakfast")
 #             Breakfast(3, "Nothing",0,0),
 #             Breakfast(3,"Croissant",5,360)]
 
-@breakfast_bp.route("", methods=["POST"])
+@breakfast_bp.route("", methods=["POST", "PUT"])
 def add_brekky():
     request_body = request.get_json()
     new_brekky = Breakfast(
@@ -25,34 +26,50 @@ def add_brekky():
 
 @breakfast_bp.route("", methods=["GET"])
 def get_menu():
-    breakfast_names = []
+    breakfast_list = []
     breakfasts = Breakfast.query.all()
     for option in breakfasts:
-        breakfast_names.append(option.name)
-    return jsonify(breakfast_names)
+        breakfast_list.append(option.dictionfy())
+    return make_response(jsonify(breakfast_list))
 
 @breakfast_bp.route("/<brekky_id>", methods=["GET"])
 def get_one_breakfast(brekky_id):
     brekky = validate_breakfast(brekky_id)
-    
-    return ({
-            "name":brekky.name,
-            "rating":brekky.rating,
-            "prep time":brekky.prep_time
-            },200)
+    return make_response(brekky.dictionfy(),200)
 
-@breakfast_bp.route("/<brekky_id>", methods=["PATCH"])
+@breakfast_bp.route("/<brekky_id>", methods=["PUT"])
 def update_one_breakfast(brekky_id):
     brekky = validate_breakfast(brekky_id)
     request_body = request.get_json()
-
-    brekky.name = request_body["name"]
-    brekky.rating = request_body["rating"]
-    brekky.prep_time = request_body["prep time"]
+    try:
+        brekky.name = request_body["name"]
+        brekky.rating = request_body["rating"]
+        brekky.prep_time = request_body["prep_time"]
+    except KeyError:
+        return make_response(f"You need to input name, rating and prep time"),400
 
     db.session.commit()
 
     return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully updated'),202)
+
+@breakfast_bp.route("/<brekky_id>", methods=["PATCH"])
+def rerate_one_breakfast(brekky_id):
+    brekky = validate_breakfast(brekky_id)
+    request_body = request.get_json()
+
+    brekky_patch_helper(brekky.name,"name",request_body)
+    brekky_patch_helper(brekky.rating,"rating",request_body)
+    brekky_patch_helper(brekky.prep_time,"prep_time",request_body)
+
+    db.session.commit()
+
+    return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully patched'),202)
+
+def brekky_patch_helper(brekky_item, value, request_body):
+    try:
+        brekky_item = request_body[value]
+    except KeyError:
+        return None
 
 @breakfast_bp.route("/<brekky_id>", methods=["DELETE"])
 def eat_the_breakfast(brekky_id):
