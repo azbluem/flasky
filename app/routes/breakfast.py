@@ -1,4 +1,3 @@
-import re
 from flask import Blueprint, jsonify, abort, make_response, request
 from app.models.breakfasts import Breakfast
 from app import db
@@ -27,7 +26,17 @@ def add_brekky():
 @breakfast_bp.route("", methods=["GET"])
 def get_menu():
     breakfast_list = []
-    breakfasts = Breakfast.query.all()
+    name_query = request.args.get("name")
+    rating_query = request.args.get("rating")
+    preptime_query = request.args.get("prep_time")
+    if name_query:
+        breakfasts = Breakfast.query.filter_by(name=name_query)
+    elif rating_query:
+        breakfasts = Breakfast.query.filter(Breakfast.rating>=rating_query).all()
+    elif preptime_query:
+        breakfasts = Breakfast.query.filter(Breakfast.prep_time<preptime_query).all()
+    else:
+        breakfasts = Breakfast.query.all()
     for option in breakfasts:
         breakfast_list.append(option.dictionfy())
     return make_response(jsonify(breakfast_list))
@@ -57,17 +66,17 @@ def rerate_one_breakfast(brekky_id):
     brekky = validate_breakfast(brekky_id)
     request_body = request.get_json()
 
-    brekky_patch_helper(brekky.name,"name",request_body)
-    brekky_patch_helper(brekky.rating,"rating",request_body)
-    brekky_patch_helper(brekky.prep_time,"prep_time",request_body)
+    brekky_patch_helper(brekky,"name",request_body)
+    brekky_patch_helper(brekky,"rating",request_body)
+    brekky_patch_helper(brekky,"prep_time",request_body)
 
     db.session.commit()
 
     return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully patched'),202)
 
-def brekky_patch_helper(brekky_item, value, request_body):
+def brekky_patch_helper(brekky, value, request_body):
     try:
-        brekky_item = request_body[value]
+        setattr(brekky, value, request_body[value])
     except KeyError:
         return None
 
