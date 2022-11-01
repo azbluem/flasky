@@ -55,7 +55,7 @@ def update_one_breakfast(brekky_id):
         brekky.rating = request_body["rating"]
         brekky.prep_time = request_body["prep_time"]
     except KeyError:
-        return make_response(f"You need to input name, rating and prep time"),400
+        return make_response(f"You need to input name, rating AND prep time"),400
 
     db.session.commit()
 
@@ -66,10 +66,11 @@ def rerate_one_breakfast(brekky_id):
     brekky = validate_breakfast(brekky_id)
     request_body = request.get_json()
 
-    brekky_patch_helper(brekky,"name",request_body)
-    brekky_patch_helper(brekky,"rating",request_body)
-    brekky_patch_helper(brekky,"prep_time",request_body)
-
+    name_change = brekky_patch_helper(brekky,"name",request_body)
+    rating_change = brekky_patch_helper(brekky,"rating",request_body)
+    prep_change = brekky_patch_helper(brekky,"prep_time",request_body)
+    if not name_change and not rating_change and not prep_change:
+        return make_response(jsonify('Please send valid information: name, rating or prep time. K thx <3'),418)
     db.session.commit()
 
     return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully patched'),202)
@@ -79,6 +80,7 @@ def brekky_patch_helper(brekky, value, request_body):
         setattr(brekky, value, request_body[value])
     except KeyError:
         return None
+    return True
 
 @breakfast_bp.route("/<brekky_id>", methods=["DELETE"])
 def eat_the_breakfast(brekky_id):
