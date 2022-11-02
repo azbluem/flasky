@@ -11,7 +11,7 @@ breakfast_bp = Blueprint("breakfast_bp", __name__, url_prefix="/breakfast")
 
 @breakfast_bp.route("", methods=["POST", "PUT"])
 def add_brekky():
-    request_body = request.get_json()
+    request_body = request.get_json()  # type: ignore
     new_brekky = Breakfast(
         name = request_body["name"],
         rating = request_body["rating"],
