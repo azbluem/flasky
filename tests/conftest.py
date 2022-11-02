@@ -38,5 +38,5 @@ def two_breakfasts(app):
         prep_time = 0
     )
 
-    db.session.add(brek1,brek2)
+    db.session.add_all([brek1,brek2])
     db.session.commit()
