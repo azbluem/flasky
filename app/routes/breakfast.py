@@ -43,12 +43,12 @@ def get_menu():
 
 @breakfast_bp.route("/<brekky_id>", methods=["GET"])
 def get_one_breakfast(brekky_id):
-    brekky = validate_breakfast(brekky_id)
+    brekky = validate_model(Breakfast,brekky_id)
     return make_response(brekky.dictionfy(),200)
 
 @breakfast_bp.route("/<brekky_id>", methods=["PUT"])
 def update_one_breakfast(brekky_id):
-    brekky = validate_breakfast(brekky_id)
+    brekky = validate_model(Breakfast,brekky_id)
     request_body = request.get_json()
     try:
         brekky.name = request_body["name"]
@@ -63,7 +63,7 @@ def update_one_breakfast(brekky_id):
 
 @breakfast_bp.route("/<brekky_id>", methods=["PATCH"])
 def rerate_one_breakfast(brekky_id):
-    brekky = validate_breakfast(brekky_id)
+    brekky = validate_model(Breakfast,brekky_id)
     request_body = request.get_json()
 
     name_change = brekky_patch_helper(brekky,"name",request_body)
@@ -84,19 +84,19 @@ def brekky_patch_helper(brekky, value, request_body):
 
 @breakfast_bp.route("/<brekky_id>", methods=["DELETE"])
 def eat_the_breakfast(brekky_id):
-    brekky = validate_breakfast(brekky_id)
+    brekky = validate_model(Breakfast,brekky_id)
 
     db.session.delete(brekky)
     db.session.commit()
 
     return make_response(jsonify(f'Breakfast with ID {brekky_id} has been successfully devoured'),202)
 
-def validate_breakfast(brekky_id):
+def validate_model(model,brekky_id):
     try:
         brekky_id = int (brekky_id)
     except ValueError:
         abort(make_response({"message": f"{brekky_id} is not a valid breakfast"},400))
-    brekky = Breakfast.query.get(brekky_id)
+    brekky = model.query.get(brekky_id)
     
     if not brekky:
         abort(make_response({"message":f"Sorry, {brekky_id} is not on the menu, have some tea!"},418))

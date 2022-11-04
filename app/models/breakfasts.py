@@ -13,3 +13,11 @@ class Breakfast(db.Model):
                 "rating":self.rating,
                 "prep_time":self.prep_time
                 }
+    def undictionfy(self,response_body):
+        new_breakfast=Breakfast(
+            name = response_body['name'],
+            rating = response_body['rating'],
+            prep_time = response_body['prep_time']
+        )
+        return new_breakfast
+
