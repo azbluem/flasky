@@ -12,11 +12,9 @@ breakfast_bp = Blueprint("breakfast_bp", __name__, url_prefix="/breakfast")
 @breakfast_bp.route("", methods=["POST", "PUT"])
 def add_brekky():
     request_body = request.get_json()  # type: ignore
-    new_brekky = Breakfast(
-        name = request_body["name"],
-        rating = request_body["rating"],
-        prep_time = request_body["prep_time"]
-    )
+
+    new_brekky = Breakfast.undictionfy(request_body)
+    
     db.session.add(new_brekky)
     db.session.commit()
 
