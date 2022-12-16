@@ -34,7 +34,7 @@ def get_menu():
     elif preptime_query:
         breakfasts = Breakfast.query.filter(Breakfast.prep_time<preptime_query).all()
     else:
-        breakfasts = Breakfast.query.all()
+        breakfasts = Breakfast.query.order_by(Breakfast.id).all()
     for option in breakfasts:
         breakfast_list.append(option.dictionfy())
     return make_response(jsonify(breakfast_list))
@@ -67,7 +67,8 @@ def rerate_one_breakfast(brekky_id):
     name_change = brekky_patch_helper(brekky,"name",request_body)
     rating_change = brekky_patch_helper(brekky,"rating",request_body)
     prep_change = brekky_patch_helper(brekky,"prep_time",request_body)
-    if not name_change and not rating_change and not prep_change:
+    upvote_change = brekky_patch_helper(brekky,"upvotes",request_body)
+    if not name_change and not rating_change and not prep_change and not upvote_change:
         return make_response(jsonify('Please send valid information: name, rating or prep time. K thx <3'),418)
     db.session.commit()
 

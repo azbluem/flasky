@@ -4,10 +4,13 @@ from flask import abort,make_response
 class Breakfast(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     name = db.Column(db.String)
+    description = db.Column(db.String)
     rating = db.Column(db.Float)
     prep_time = db.Column(db.Integer)
+    upvotes = db.Column(db.Integer)
     menu_id = db.Column(db.Integer, db.ForeignKey('menu.menu_id'), default=None)
     menu = db.relationship('Menu', back_populates='breakfasts')
+    # ingredients = db.relationship('Ingredients', back_populates='breakfasts_items', secondary='breakfast_ingredients')
 
     def dictionfy(self):
         return_dict =  {
